@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sons Calmos - Espaço de Autorregulação Sensorial</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        calm: {
+                            50: '#f4f7f6',
+                            100: '#e3ebe8',
+                            200: '#c7d7d2',
+                            300: '#a3beb7',
+                            400: '#7a9f97',
+                            500: '#5c837b',
+                            600: '#486862',
+                            700: '#3c5450',
+                            800: '#324542',
+                            900: '#2c3b38',
+                            950: '#172221',
+                        },
+                        night: {
+                            800: '#121824',
+                            900: '#0b0f19',
+                            950: '#06080d'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* CSS customizado para acessibilidade e transições suaves */
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* Estilização suave para sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            border-radius: 9999px;
+            background: rgba(120, 140, 150, 0.25);
+        }
+        .dark input[type=range]::-webkit-slider-runnable-track {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 22px;
+            width: 22px;
+            border-radius: 50%;
+            background: #5c837b;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -7px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .dark input[type=range]::-webkit-slider-thumb {
+            background: #a3beb7;
+        }
+
+        /* Animação do Guia de Respiração */
+        @keyframes breathe {
+            0%, 100% {
+                transform: scale(0.85);
+                opacity: 0.6;
+            }
+            40% {
+                transform: scale(1.35);
+                opacity: 0.95;
+            }
+            60% {
+                transform: scale(1.35);
+                opacity: 0.95;
+            }
+        }
+
+        .breathing-circle {
+            animation: breathe 10s ease-in-out infinite;
+        }
+
+        .paused-animation {
+            animation-play-state: paused !important;
+        }
+
+        /* Esconder barra de rolagem mas manter navegação */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-calm-50 text-slate-800 dark:bg-night-900 dark:text-slate-200 min-h-screen flex flex-col font-sans transition-colors duration-500">
+
+    <!-- BARRA SUPERIOR / HEADER -->
+    <header class="w-full max-w-5xl mx-auto px-4 py-5 flex justify-between items-center border-b border-calm-200/50 dark:border-slate-800/60">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-full bg-calm-400/20 dark:bg-calm-600/30 flex items-center justify-center text-calm-600 dark:text-calm-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-calm-800 dark:text-calm-100">Sons Calmos</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Ambiente de Regulação Sensorial e Foco</p>
+            </div>
+        </div>
+
+        <!-- Controles Globais do Topo -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+            <!-- Botão do Timer -->
+            <button id="timerBtn" onclick="toggleTimerMenu()" class="p-2.5 rounded-xl bg-white dark:bg-night-800 border border-slate-200 dark:border-slate-700/60 hover:border-calm-400 text-slate-700 dark:text-slate-300 text-sm flex items-center space-x-2 shadow-sm transition">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-calm-600 dark:text-calm-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span id="timerLabel" class="hidden sm:inline font-medium">Temporizador</span>
+            </button>
+
+            <!-- Alternar Tema (Claro/Escuro) -->
+            <button id="themeToggle" onclick="toggleTheme()" aria-label="Alternar Tema Claro/Escuro" class="p-2.5 rounded-xl bg-white dark:bg-night-800 border border-slate-200 dark:border-slate-700/60 hover:border-calm-400 text-slate-700 dark:text-slate-300 shadow-sm transition">
+                <svg id="themeIconSun" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <svg id="themeIconMoon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
+
+            <!-- BOTÃO DE EMERGÊNCIA / SILÊNCIO RÁPIDO -->
+            <button id="emergencyMuteBtn" onclick="toggleEmergencyMute()" aria-label="Pausa de Emergência" class="px-4 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-semibold text-xs sm:text-sm tracking-wide shadow-md hover:shadow-lg transition flex items-center space-x-1.5 active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                </svg>
+                <span>SILÊNCIAR TUDO</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MENU DROPDOWN DE TEMPORIZADOR (OCULTO POR PADRÃO) -->
+    <div id="timerModal" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-night-800 rounded-3xl p-6 max-w-sm w-full border border-slate-200 dark:border-slate-700 shadow-2xl space-y-4">
+            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center justify-between">
+                <span>Temporizador de Desligamento</span>
+                <button onclick="toggleTimerMenu()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">✕</button>
+            </h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400">O som irá diminuir suavemente (fade-out) até parar completamente.</p>
+            <div class="grid grid-cols-2 gap-2.5">
+                <button onclick="setTimer(15)" class="p-3 text-sm rounded-xl bg-slate-100 dark:bg-slate-700/50 hover:bg-calm-100 dark:hover:bg-calm-800 font-medium text-slate-700 dark:text-slate-200 transition">15 Minutos</button>
+                <button onclick="setTimer(30)" class="p-3 text-sm rounded-xl bg-slate-100 dark:bg-slate-700/50 hover:bg-calm-100 dark:hover:bg-calm-800 font-medium text-slate-700 dark:text-slate-200 transition">30 Minutos</button>
+                <button onclick="setTimer(45)" class="p-3 text-sm rounded-xl bg-slate-100 dark:bg-slate-700/50 hover:bg-calm-100 dark:hover:bg-calm-800 font-medium text-slate-700 dark:text-slate-200 transition">45 Minutos</button>
+                <button onclick="setTimer(60)" class="p-3 text-sm rounded-xl bg-slate-100 dark:bg-slate-700/50 hover:bg-calm-100 dark:hover:bg-calm-800 font-medium text-slate-700 dark:text-slate-200 transition">60 Minutos</button>
+            </div>
+            <button onclick="setTimer(0)" class="w-full py-2.5 text-xs text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-xl font-medium transition">Desativar Temporizador</button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow max-w-5xl w-full mx-auto px-4 py-6 space-y-8">
+
+        <!-- PAINEL 1: RESPIRO GUIA SENSORIAL -->
+        <section class="bg-white/80 dark:bg-night-800/80 backdrop-blur border border-calm-100 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-sm">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                <!-- Texto e Informações da Respiração -->
+                <div class="space-y-3 text-center md:text-left md:max-w-xs">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-calm-100 dark:bg-calm-900/60 text-calm-700 dark:text-calm-300 text-xs font-semibold">
+                        <span>Guia Visual</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-800 dark:text-slate-100">Respiração Reguladora</h2>
+                    <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                        Siga o ritmo suave do círculo para acalmar o sistema nervoso. Sintonize sua respiração no seu próprio tempo.
+                    </p>
+                    <div class="pt-2 flex justify-center md:justify-start gap-2">
+                        <button id="toggleAnimBtn" onclick="toggleBreathingAnimation()" class="px-3.5 py-1.5 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-700/60 hover:bg-slate-200 text-slate-700 dark:text-slate-300 transition">
+                            Pausar Animação
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Animação do Círculo de Respiração -->
+                <div class="relative w-56 h-56 sm:w-64 sm:h-64 flex items-center justify-center">
+                    <!-- Círculo Externo Decorativo -->
+                    <div class="absolute inset-0 rounded-full border border-calm-300/30 dark:border-calm-600/20"></div>
+                    
+                    <!-- Círculo Animado -->
+                    <div id="breathingCircle" class="breathing-circle w-40 h-40 rounded-full bg-gradient-to-br from-calm-300 to-calm-500 dark:from-calm-600 dark:to-calm-800 opacity-80 shadow-2xl flex items-center justify-center transition-all"></div>
+                    
+                    <!-- Rótulo de Texto Central -->
+                    <div class="absolute text-center pointer-events-none">
+                        <span id="breathText" class="text-base font-semibold tracking-wide text-slate-800 dark:text-slate-100 transition-opacity duration-500">
+                            Inspire...
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAINEL 2: MIXER DE SONS REGULADORES -->
+        <section class="space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100">Mixer de Paisagens Sonoras</h2>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Combine diferentes frequências para encontrar o seu nível ideal de conforto auditivo.</p>
+                </div>
+                <!-- Master Play/Pause -->
+                <button id="masterPlayBtn" onclick="toggleMasterPlay()" class="self-start sm:self-auto px-6 py-3 rounded-2xl bg-calm-500 hover:bg-calm-600 dark:bg-calm-600 dark:hover:bg-calm-500 text-white font-semibold text-sm shadow-md hover:shadow-lg transition flex items-center space-x-2 active:scale-95">
+                    <svg id="masterPlayIcon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span id="masterPlayText">Iniciar Todos os Sons</span>
+                </button>
+            </div>
+
+            <!-- Grid de Cartões de Sons -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                <!-- CARD 1: Ruído Marrom -->
+                <div class="sound-card bg-white dark:bg-night-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold text-xs">
+                                BROWN
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-slate-800 dark:text-slate-200">Ruído Marrom</h3>
+                                <p class="text-xs text-slate-400">Grave, acolhedor e constante</p>
+                            </div>
+                        </div>
+                        <button onclick="toggleTrack('brown')" id="btn-brown" aria-label="Ativar Ruído Marrom" class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-slate-500 hover:text-calm-600 transition">
+                            ⏸
+                        </button>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-400 mb-1">
+                            <span>Volume</span>
+                            <span id="vol-text-brown">0%</span>
+                        </div>
+                        <input type="range" id="vol-brown" min="0" max="100" value="0" oninput="updateVolume('brown', this.value)" aria-label="Volume Ruído Marrom">
+                    </div>
+                </div>
+
+                <!-- CARD 2: Ruído Rosa -->
+                <div class="sound-card bg-white dark:bg-night-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-500 dark:text-rose-400 flex items-center justify-center font-bold text-xs">
+                                PINK
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-slate-800 dark:text-slate-200">Ruído Rosa</h3>
+                                <p class="text-xs text-slate-400">Suave e balanceado (ideal para foco)</p>
+                            </div>
+                        </div>
+                        <button onclick="toggleTrack('pink')" id="btn-pink" aria-label="Ativar Ruído Rosa" class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-slate-500 hover:text-calm-600 transition">
+                            ⏸
+                        </button>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-400 mb-1">
+                            <span>Volume</span>
+                            <span id="vol-text-pink">0%</span>
+                        </div>
+                        <input type="range" id="vol-pink" min="0" max="100" value="0" oninput="updateVolume('pink', this.value)" aria-label="Volume Ruído Rosa">
+                    </div>
+                </div>
+
+                <!-- CARD 3: Ruído Branco -->
+                <div class="sound-card bg-white dark:bg-night-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-600 dark:text-sky-400 flex items-center justify-center font-bold text-xs">
+                                WHITE
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-slate-800 dark:text-slate-200">Ruído Branco</h3>
+                                <p class="text-xs text-slate-400">Mascaramento estático de ruídos externos</p>
+                            </div>
+                        </div>
+                        <button onclick="toggleTrack('white')" id="btn-white" aria-label="Ativar Ruído Branco" class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-slate-500 hover:text-calm-600 transition">
+                            ⏸
+                        </button>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-400 mb-1">
+                            <span>Volume</span>
+                            <span id="vol-text-white">0%</span>
+                        </div>
+                        <input type="range" id="vol-white" min="0" max="100" value="0" oninput="updateVolume('white', this.value)" aria-label="Volume Ruído Branco">
+                    </div>
+                </div>
+
+                <!-- CARD 4: Ondas do Mar Synthetized -->
+                <div class="sound-card bg-white dark:bg-night-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 flex items-center justify-center font-bold text-xs">
+                                MAR
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-slate-800 dark:text-slate-200">Ondas Suaves</h3>
+                                <p class="text-xs text-slate-400">Oscilações lentas e relaxantes</p>
+                            </div>
+                        </div>
+                        <button onclick="toggleTrack('waves')" id="btn-waves" aria-label="Ativar Ondas do Mar" class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-slate-500 hover:text-calm-600 transition">
+                            ⏸
+                        </button>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-400 mb-1">
+                            <span>Volume</span>
+                            <span id="vol-text-waves">0%</span>
+                        </div>
+                        <input type="range" id="vol-waves" min="0" max="100" value="0" oninput="updateVolume('waves', this.value)" aria-label="Volume Ondas do Mar">
+                    </div>
+                </div>
+
+                <!-- CARD 5: Chuva Suave Synthetized -->
+                <div class="sound-card bg-white dark:bg-night-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-xs">
+                                CHUVA
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-slate-800 dark:text-slate-200">Chuva Suave</h3>
+                                <p class="text-xs text-slate-400">Gotas suaves e cadenciadas</p>
+                            </div>
+                        </div>
+                        <button onclick="toggleTrack('rain')" id="btn-rain" aria-label="Ativar Chuva" class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-slate-500 hover:text-calm-600 transition">
+                            ⏸
+                        </button>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-400 mb-1">
+                            <span>Volume</span>
+                            <span id="vol-text-rain">0%</span>
+                        </div>
+                        <input type="range" id="vol-rain" min="0" max="100" value="0" oninput="updateVolume('rain', this.value)" aria-label="Volume Chuva">
+                    </div>
+                </div>
+
+                <!-- CARD 6: Frequência Orgânica (432 Hz Calm Sine) -->
+                <div class="sound-card bg-white dark:bg-night-800 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold text-xs">
+                                432 Hz
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-slate-800 dark:text-slate-200">Tom Harmônico</h3>
+                                <p class="text-xs text-slate-400">Frequência ressonante contínua</p>
+                            </div>
+                        </div>
+                        <button onclick="toggleTrack('sine')" id="btn-sine" aria-label="Ativar Frequência Harmônica" class="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center text-slate-500 hover:text-calm-600 transition">
+                            ⏸
+                        </button>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs text-slate-400 mb-1">
+                            <span>Volume</span>
+                            <span id="vol-text-sine">0%</span>
+                        </div>
+                        <input type="range" id="vol-sine" min="0" max="100" value="0" oninput="updateVolume('sine', this.value)" aria-label="Volume Frequência Harmônica">
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- PAINEL 3: GUIA INFORMATIVO E RECURSOS -->
+        <section class="bg-calm-100/50 dark:bg-night-800/40 border border-calm-200/60 dark:border-slate-800 rounded-3xl p-6 sm:p-8 space-y-4">
+            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-200 flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-calm-600 dark:text-calm-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Como os ruídos auxiliam na regulação sensorial?</span>
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
+                <div class="p-4 rounded-2xl bg-white/60 dark:bg-slate-800/40 space-y-1">
+                    <h4 class="font-semibold text-slate-800 dark:text-slate-200">Ruído Marrom</h4>
+                    <p>Contém frequências mais baixas e graves. É frequentemente preferido por neurodivergentes por ajudar a desacelerar pensamentos e suavizar sobrecargas sem frequências agudas incômodas.</p>
+                </div>
+                <div class="p-4 rounded-2xl bg-white/60 dark:bg-slate-800/40 space-y-1">
+                    <h4 class="font-semibold text-slate-800 dark:text-slate-200">Ruído Rosa</h4>
+                    <p>Equilibra os agudos do ruído branco de forma natural. É útil para aumentar o foco e a concentração durante tarefas diárias ou estudos.</p>
+                </div>
+                <div class="p-4 rounded-2xl bg-white/60 dark:bg-slate-800/40 space-y-1">
+                    <h4 class="font-semibold text-slate-800 dark:text-slate-200">Atalhos do Teclado</h4>
+                    <p>Pressione <kbd class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700">Espaço</kbd> para pausar/retomar, ou <kbd class="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-700">M</kbd> para silenciar tudo instantaneamente.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER ACCESSIBILITY NOTICE -->
+    <footer class="w-full max-w-5xl mx-auto px-4 py-6 text-center text-xs text-slate-400 dark:text-slate-500">
+        <p>Desenvolvido com foco em acessibilidade neurodiversa, previsibilidade e conforto sensorial.</p>
+    </footer>
+
+    <script>
+        /* ===================================================================
+           ESTADO DA APLICAÇÃO E SISTEMA DE ÁUDIO SINTÉTICO (WEB AUDIO API)
+           =================================================================== */
+        let audioCtx = null;
+        let isMasterPlaying = false;
+        let isMutedEmergency = false;
+        let activeTimer = null;
+
+        // Estado individual de cada faixa
+        const tracks = {
+            brown: { volume: 0, node: null, gainNode: null, active: false },
+            pink:  { volume: 0, node: null, gainNode: null, active: false },
+            white: { volume: 0, node: null, gainNode: null, active: false },
+            waves: { volume: 0, node: null, gainNode: null, active: false, lfo: null },
+            rain:  { volume: 0, node: null, gainNode: null, active: false },
+            sine:  { volume: 0, node: null, gainNode: null, active: false }
+        };
+
+        // Inicializa Contexto Web Audio sob demanda (cumprindo políticas de navegadores)
+        function initAudioContext() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        /* -------------------------------------------------------------------
+           GERADORES NATIVOS DE ÁUDIO (Ruído Marrom, Rosa, Branco e Tons)
+           ------------------------------------------------------------------- */
+
+        // Gerador de Ruído Branco
+        function createWhiteNoiseNode() {
+            const bufferSize = 2 * audioCtx.sampleRate;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+            const whiteNoise = audioCtx.createBufferSource();
+            whiteNoise.buffer = buffer;
+            whiteNoise.loop = true;
+            return whiteNoise;
+        }
+
+        // Gerador de Ruído Marrom (Brown Noise)
+        function createBrownNoiseNode() {
+            const bufferSize = 2 * audioCtx.sampleRate;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = buffer.getChannelData(0);
+            let lastOut = 0.0;
+            for (let i = 0; i < bufferSize; i++) {
+                const white = Math.random() * 2 - 1;
+                output[i] = (lastOut + (0.02 * white)) / 1.02;
+                lastOut = output[i];
+                output[i] *= 3.5; // Ajuste de ganho nominal
+            }
+            const brownNoise = audioCtx.createBufferSource();
+            brownNoise.buffer = buffer;
+            brownNoise.loop = true;
+            return brownNoise;
+        }
+
+        // Gerador de Ruído Rosa (Pink Noise)
+        function createPinkNoiseNode() {
+            const bufferSize = 2 * audioCtx.sampleRate;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = buffer.getChannelData(0);
+            let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+            for (let i = 0; i < bufferSize; i++) {
+                const white = Math.random() * 2 - 1;
+                b0 = 0.99886 * b0 + white * 0.0555179;
+                b1 = 0.99332 * b1 + white * 0.0750759;
+                b2 = 0.96900 * b2 + white * 0.1538520;
+                b3 = 0.86650 * b3 + white * 0.3104856;
+                b4 = 0.55000 * b4 + white * 0.5329522;
+                b5 = -0.7616 * b5 - white * 0.0168980;
+                output[i] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+                output[i] *= 0.11;
+                b6 = white * 0.115926;
+            }
+            const pinkNoise = audioCtx.createBufferSource();
+            pinkNoise.buffer = buffer;
+            pinkNoise.loop = true;
+            return pinkNoise;
+        }
+
+        // Gerador de Ondas do Mar (Ruído Rosa com Filtro Modulado por LFO)
+        function createWavesNode(gainNode) {
+            const pinkSource = createPinkNoiseNode();
+            
+            // Filtro Passa-Baixa para simular a água
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(300, audioCtx.currentTime);
+
+            // Oscillador de Baixa Frequência (LFO) para simular o movimento de vai e vem
+            const lfo = audioCtx.createOscillator();
+            lfo.frequency.setValueAtTime(0.12, audioCtx.currentTime); // ~8 segundos por ciclo
+
+            const lfoGain = audioCtx.createGain();
+            lfoGain.gain.setValueAtTime(250, audioCtx.currentTime);
+
+            lfo.connect(lfoGain);
+            lfoGain.connect(filter.frequency);
+
+            pinkSource.connect(filter);
+            filter.connect(gainNode);
+
+            lfo.start();
+            pinkSource.start();
+
+            tracks.waves.lfo = lfo;
+            return pinkSource;
+        }
+
+        // Gerador de Chuva (Ruído Branco com Filtro Passa-Faixa)
+        function createRainNode(gainNode) {
+            const whiteSource = createWhiteNoiseNode();
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+
+            whiteSource.connect(filter);
+            filter.connect(gainNode);
+            whiteSource.start();
+            return whiteSource;
+        }
+
+        // Gerador de Frequência Harmoniosa (Senoide 432 Hz)
+        function createSineNode(gainNode) {
+            const osc = audioCtx.createOscillator();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(432, audioCtx.currentTime); // Frequência relaxante de 432 Hz
+
+            osc.connect(gainNode);
+            osc.start();
+            return osc;
+        }
+
+        /* -------------------------------------------------------------------
+           CONTROLE DE ÁUDIO E VOLUMES
+           ------------------------------------------------------------------- */
+
+        function updateVolume(trackKey, value) {
+            initAudioContext();
+            const volPct = parseInt(value, 10);
+            tracks[trackKey].volume = volPct / 100;
+
+            // Atualiza texto visual
+            document.getElementById(`vol-text-${trackKey}`).innerText = `${volPct}%`;
+
+            // Se o volume for maior que zero e a faixa não estiver tocando, ativa
+            if (volPct > 0 && !tracks[trackKey].active) {
+                startTrack(trackKey);
+            } else if (volPct === 0 && tracks[trackKey].active) {
+                stopTrack(trackKey);
+            }
+
+            // Atualiza o ganho suavemente se ativo
+            if (tracks[trackKey].gainNode && audioCtx) {
+                const targetGain = isMutedEmergency ? 0 : (tracks[trackKey].volume * 0.4); // Limite de conforto
+                tracks[trackKey].gainNode.gain.setTargetAtTime(targetGain, audioCtx.currentTime, 0.05);
+            }
+
+            checkMasterState();
+        }
+
+        function startTrack(trackKey) {
+            if (!audioCtx) initAudioContext();
+            if (tracks[trackKey].active) return;
+
+            const gainNode = audioCtx.createGain();
+            const targetGain = isMutedEmergency ? 0 : (tracks[trackKey].volume * 0.4);
+            gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+            gainNode.gain.setTargetAtTime(targetGain, audioCtx.currentTime, 0.1);
+            gainNode.connect(audioCtx.destination);
+
+            let node = null;
+
+            switch (trackKey) {
+                case 'brown':
+                    node = createBrownNoiseNode();
+                    node.connect(gainNode);
+                    node.start();
+                    break;
+                case 'pink':
+                    node = createPinkNoiseNode();
+                    node.connect(gainNode);
+                    node.start();
+                    break;
+                case 'white':
+                    node = createWhiteNoiseNode();
+                    node.connect(gainNode);
+                    node.start();
+                    break;
+                case 'waves':
+                    node = createWavesNode(gainNode);
+                    break;
+                case 'rain':
+                    node = createRainNode(gainNode);
+                    break;
+                case 'sine':
+                    node = createSineNode(gainNode);
+                    break;
+            }
+
+            tracks[trackKey].node = node;
+            tracks[trackKey].gainNode = gainNode;
+            tracks[trackKey].active = true;
+
+            updateTrackUI(trackKey, true);
+        }
+
+        function stopTrack(trackKey) {
+            if (!tracks[trackKey].active) return;
+
+            if (tracks[trackKey].gainNode && audioCtx) {
+                tracks[trackKey].gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+                setTimeout(() => {
+                    if (tracks[trackKey].node) {
+                        try { tracks[trackKey].node.stop(); } catch(e){}
+                        try { tracks[trackKey].node.disconnect(); } catch(e){}
+                    }
+                    if (tracks[trackKey].lfo) {
+                        try { tracks[trackKey].lfo.stop(); } catch(e){}
+                    }
+                    tracks[trackKey].active = false;
+                    updateTrackUI(trackKey, false);
+                }, 100);
+            }
+        }
+
+        function toggleTrack(trackKey) {
+            if (tracks[trackKey].active) {
+                document.getElementById(`vol-${trackKey}`).value = 0;
+                updateVolume(trackKey, 0);
+            } else {
+                const defaultVol = 40;
+                document.getElementById(`vol-${trackKey}`).value = defaultVol;
+                updateVolume(trackKey, defaultVol);
+            }
+        }
+
+        function updateTrackUI(trackKey, isActive) {
+            const btn = document.getElementById(`btn-${trackKey}`);
+            if (isActive) {
+                btn.innerHTML = '▶';
+                btn.classList.add('bg-calm-500', 'text-white', 'dark:bg-calm-600');
+                btn.classList.remove('bg-slate-100', 'text-slate-500', 'dark:bg-slate-700/50');
+            } else {
+                btn.innerHTML = '⏸';
+                btn.classList.remove('bg-calm-500', 'text-white', 'dark:bg-calm-600');
+                btn.classList.add('bg-slate-100', 'text-slate-500', 'dark:bg-slate-700/50');
+            }
+        }
+
+        /* -------------------------------------------------------------------
+           CONTROLE GERAL (PLAY/PAUSE MASTER & PAUSA DE EMERGÊNCIA)
+           ------------------------------------------------------------------- */
+
+        function toggleMasterPlay() {
+            initAudioContext();
+            isMasterPlaying = !isMasterPlaying;
+
+            if (isMasterPlaying) {
+                // Se tudo estiver zerado, ativa um som padrão suave (Ruído Marrom)
+                const anyActive = Object.values(tracks).some(t => t.volume > 0);
+                if (!anyActive) {
+                    document.getElementById('vol-brown').value = 35;
+                    updateVolume('brown', 35);
+                } else {
+                    Object.keys(tracks).forEach(key => {
+                        if (tracks[key].volume > 0) startTrack(key);
+                    });
+                }
+            } else {
+                Object.keys(tracks).forEach(key => stopTrack(key));
+            }
+            updateMasterUI();
+        }
+
+        function checkMasterState() {
+            const anyActive = Object.values(tracks).some(t => t.active);
+            isMasterPlaying = anyActive;
+            updateMasterUI();
+        }
+
+        function updateMasterUI() {
+            const btnText = document.getElementById('masterPlayText');
+            if (isMasterPlaying) {
+                btnText.innerText = "Pausar Sons";
+            } else {
+                btnText.innerText = "Iniciar Todos os Sons";
+            }
+        }
+
+        // SILÊNCIO RÁPIDO / EMERGÊNCIA
+        function toggleEmergencyMute() {
+            isMutedEmergency = !isMutedEmergency;
+            const muteBtn = document.getElementById('emergencyMuteBtn');
+
+            if (isMutedEmergency) {
+                muteBtn.classList.add('animate-pulse', 'ring-4', 'ring-rose-300');
+                Object.keys(tracks).forEach(key => {
+                    if (tracks[key].gainNode && audioCtx) {
+                        tracks[key].gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.01);
+                    }
+                });
+            } else {
+                muteBtn.classList.remove('animate-pulse', 'ring-4', 'ring-rose-300');
+                Object.keys(tracks).forEach(key => {
+                    if (tracks[key].gainNode && audioCtx && tracks[key].active) {
+                        const targetGain = tracks[key].volume * 0.4;
+                        tracks[key].gainNode.gain.setTargetAtTime(targetGain, audioCtx.currentTime, 0.1);
+                    }
+                });
+            }
+        }
+
+        /* -------------------------------------------------------------------
+           TEMPORIZADOR (SLEEP TIMER)
+           ------------------------------------------------------------------- */
+
+        function toggleTimerMenu() {
+            const modal = document.getElementById('timerModal');
+            modal.classList.toggle('hidden');
+        }
+
+        function setTimer(minutes) {
+            if (activeTimer) clearTimeout(activeTimer);
+            const label = document.getElementById('timerLabel');
+
+            if (minutes === 0) {
+                label.innerText = "Temporizador";
+                toggleTimerMenu();
+                return;
+            }
+
+            label.innerText = `${minutes} min`;
+            toggleTimerMenu();
+
+            activeTimer = setTimeout(() => {
+                // Fade out suave no término do tempo
+                let steps = 20;
+                let interval = setInterval(() => {
+                    steps--;
+                    Object.keys(tracks).forEach(key => {
+                        const currentVol = parseInt(document.getElementById(`vol-${key}`).value, 10);
+                        if (currentVol > 0) {
+                            const newVol = Math.max(0, currentVol - 2);
+                            document.getElementById(`vol-${key}`).value = newVol;
+                            updateVolume(key, newVol);
+                        }
+                    });
+                    if (steps <= 0) {
+                        clearInterval(interval);
+                        label.innerText = "Temporizador";
+                    }
+                }, 100);
+            }, minutes * 60 * 1000);
+        }
+
+        /* -------------------------------------------------------------------
+           RESPIRAÇÃO GUIADA (TEXTO SINCRONIZADO COM ANIMAÇÃO)
+           ------------------------------------------------------------------- */
+
+        let isAnimPaused = false;
+        const breathText = document.getElementById('breathText');
+        const breathingCircle = document.getElementById('breathingCircle');
+
+        function updateBreathText() {
+            if (isAnimPaused) return;
+            // Sincroniza o texto com o ciclo do CSS de 10 segundos
+            // 0-4s: Inspire, 4-6s: Segure, 6-10s: Expire
+            breathText.innerText = "Inspire...";
+            setTimeout(() => {
+                if (!isAnimPaused) breathText.innerText = "Segure...";
+            }, 4000);
+            setTimeout(() => {
+                if (!isAnimPaused) breathText.innerText = "Expire...";
+            }, 6000);
+        }
+
+        setInterval(updateBreathText, 10000);
+        updateBreathText();
+
+        function toggleBreathingAnimation() {
+            isAnimPaused = !isAnimPaused;
+            const btn = document.getElementById('toggleAnimBtn');
+
+            if (isAnimPaused) {
+                breathingCircle.classList.add('paused-animation');
+                breathText.innerText = "Pausado";
+                btn.innerText = "Retomar Animação";
+            } else {
+                breathingCircle.classList.remove('paused-animation');
+                btn.innerText = "Pausar Animação";
+                updateBreathText();
+            }
+        }
+
+        /* -------------------------------------------------------------------
+           TEMA (MODO ESCURO / CLARO) E ATALHOS DE TECLADO
+           ------------------------------------------------------------------- */
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const sunIcon = document.getElementById('themeIconSun');
+            const moonIcon = document.getElementById('themeIconMoon');
+
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                html.classList.add('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+        }
+
+        // Atalhos do Teclado
+        window.addEventListener('keydown', (e) => {
+            // Evita disparar se o usuário estiver digitando em campos de texto
+            if (e.target.tagName === 'INPUT' && e.target.type !== 'range') return;
+
+            if (e.code === 'Space') {
+                e.preventDefault();
+                toggleMasterPlay();
+            } else if (e.code === 'KeyM') {
+                e.preventDefault();
+                toggleEmergencyMute();
+            }
+        });
+    </script>
+</body>
+</html>
